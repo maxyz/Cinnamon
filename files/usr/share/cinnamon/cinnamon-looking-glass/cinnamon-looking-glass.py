@@ -14,9 +14,11 @@ import sys
 import os
 import pyinotify
 import gi
-gi.require_version('Gtk', '3.0')
+gi.require_version('Gtk', '3.0')  # noqa
 from gi.repository import Gio, Gtk, GObject, Gdk, GLib
-import dbus, dbus.service, dbus.glib
+import dbus
+import dbus.service
+import dbus.glib
 import pageutils
 from lookingglass_proxy import LookingGlassProxy
 from dbus.mainloop.glib import DBusGMainLoop
@@ -26,7 +28,11 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
 
+lookingGlassProxy = None
+
+
 class MenuButton(Gtk.Button):
+
     def __init__(self, text):
         Gtk.Button.__init__(self, text)
         self.connect("clicked", self.onClicked)
@@ -36,7 +42,7 @@ class MenuButton(Gtk.Button):
 
     def onClicked(self, widget):
         x, y, w, h = self.getScreenCoordinates()
-        self.menu.popup(None, None, lambda menu, data: (x, y+h, True), None, 1, 0)
+        self.menu.popup(None, None, lambda menu, data: (x, y + h, True), None, 1, 0)
 
     def getScreenCoordinates(self):
         parent = self.get_parent_window()
@@ -45,12 +51,14 @@ class MenuButton(Gtk.Button):
         h = parent.get_height()
         extents = parent.get_frame_extents()
         allocation = self.get_allocation()
-        return (x + (extents.width-w)/2 + allocation.x,
-                y + (extents.height-h)-(extents.width-w)/2 + allocation.y,
+        return (x + (extents.width - w) // 2 + allocation.x,
+                y + (extents.height - h) - (extents.width - w) // 2 + allocation.y,
                 allocation.width,
                 allocation.height)
 
+
 class CommandLine(Gtk.Entry):
+
     def __init__(self):
         Gtk.Entry.__init__(self)
         self.settings = Gio.Settings.new("org.cinnamon")
@@ -101,7 +109,7 @@ class CommandLine(Gtk.Entry):
         if self.historyPosition == -1:
             return
         num = len(self.history)
-        if self.historyPosition == num-1:
+        if self.historyPosition == num - 1:
             self.historyPosition = -1
             self.set_text(self.lastText)
         else:
@@ -114,7 +122,7 @@ class CommandLine(Gtk.Entry):
         command = self.get_text()
         if command != "":
             num = len(self.history)
-            if num == 0 or self.history[num-1] != command:
+            if num == 0 or self.history[num - 1] != command:
                 self.history.append(command)
             self.set_text("")
             self.settings.set_strv("looking-glass-history", self.history)
@@ -126,6 +134,7 @@ class CommandLine(Gtk.Entry):
 
 
 class NewLogDialog(Gtk.Dialog):
+
     def __init__(self, parent):
         Gtk.Dialog.__init__(self, "Add a new file watcher", parent, 0,
                             (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
@@ -162,7 +171,7 @@ class NewLogDialog(Gtk.Dialog):
 
     def onComboChanged(self, combo):
         tree_iter = combo.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             model = combo.get_model()
             name, self.filename = model[tree_iter][:2]
             self.entry.set_text(name)
@@ -175,7 +184,7 @@ class NewLogDialog(Gtk.Dialog):
             return False
 
     def isValid(self):
-        return self.entry.get_text() != "" and self.filename != None and os.path.isfile(os.path.expanduser(self.filename))
+        return self.entry.get_text() != "" and self.filename is not None and os.path.isfile(os.path.expanduser(self.filename))
 
     def getFile(self):
         return os.path.expanduser(self.filename)
@@ -207,7 +216,9 @@ class NewLogDialog(Gtk.Dialog):
 
         return result
 
+
 class FileWatchHandler(pyinotify.ProcessEvent):
+
     def __init__(self, view):
         self.view = view
 
@@ -223,7 +234,9 @@ class FileWatchHandler(pyinotify.ProcessEvent):
     def process_IN_MODIFY(self, event):
         self.view.getUpdates()
 
+
 class FileWatcherView(Gtk.ScrolledWindow):
+
     def __init__(self, filename):
         Gtk.ScrolledWindow.__init__(self)
 
@@ -245,7 +258,7 @@ class FileWatcherView(Gtk.ScrolledWindow):
         handler = FileWatchHandler(self)
         wm = pyinotify.WatchManager()
         self.notifier = pyinotify.ThreadedNotifier(wm, handler)
-        wdd = wm.add_watch(filename, pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY)
+        wm.add_watch(filename, pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY)
         self.notifier.start()
         self.connect("destroy", self.onDestroy)
         self.connect("size-allocate", self.onSizeChanged)
@@ -268,15 +281,17 @@ class FileWatcherView(Gtk.ScrolledWindow):
             self.updateId = GLib.timeout_add(500, self.update)
 
     def update(self):
-        self.changed = 2 # onSizeChanged will be called twice, but only the second time is final
+        self.changed = 2  # onSizeChanged will be called twice, but only the second time is final
         self.textbuffer.set_text(open(self.filename, 'r').read())
         self.updateId = 0
         return False
+
 
 class ClosableTabLabel(Gtk.Box):
     __gsignals__ = {
         "close-clicked": (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, ()),
     }
+
     def __init__(self, label_text):
         Gtk.Box.__init__(self)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
@@ -297,8 +312,10 @@ class ClosableTabLabel(Gtk.Box):
     def button_clicked(self, button, data=None):
         self.emit("close-clicked")
 
+
 class MelangeApp(dbus.service.Object):
-    def __init__ (self):
+
+    def __init__(self):
         global lookingGlassProxy
         lookingGlassProxy = LookingGlassProxy()
         self.lookingGlassProxy = lookingGlassProxy
@@ -308,9 +325,9 @@ class MelangeApp(dbus.service.Object):
         self.window = None
         self.run()
 
-        dbus.service.Object.__init__ (self, dbus.SessionBus (), MELANGE_DBUS_PATH, MELANGE_DBUS_NAME)
+        dbus.service.Object.__init__(self, dbus.SessionBus(), MELANGE_DBUS_PATH, MELANGE_DBUS_NAME)
 
-    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='')
+    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='')
     def show(self):
         if self.window.get_visible():
             if self._minimized:
@@ -320,15 +337,15 @@ class MelangeApp(dbus.service.Object):
         else:
             self.showAndFocus()
 
-    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='')
+    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='')
     def hide(self):
         self.window.hide()
 
-    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='b')
+    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='b')
     def getVisible(self):
         return self.window.get_visible()
 
-    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='', out_signature='')
+    @dbus.service.method(MELANGE_DBUS_NAME, in_signature='', out_signature='')
     def doInspect(self):
         if self.lookingGlassProxy:
             self.lookingGlassProxy.StartInspector()
@@ -393,21 +410,21 @@ class MelangeApp(dbus.service.Object):
         column = 0
         pickerButton = pageutils.ImageButton("color-select-symbolic")
         pickerButton.connect("clicked", self.onPickerClicked)
-        table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
+        table.attach(pickerButton, column, column + 1, 1, 2, 0, 0, 2)
         column += 1
 
-        table.attach(Gtk.Label("Exec:"), column, column+1, 1, 2, 0, 0, 3)
+        table.attach(Gtk.Label("Exec:"), column, column + 1, 1, 2, 0, 0, 3)
         column += 1
 
         self.commandline = CommandLine()
-        table.attach(self.commandline, column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
+        table.attach(self.commandline, column, column + 1, 1, 2, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
 
         self.statusLabel = Gtk.Label("Status")
         self.statusLabel.set_markup(" <span foreground='red'>[ Cinnamon is OFFLINE! ]</span> ")
         self.statusLabel.set_tooltip_text("The connection to cinnamon is broken")
         self.statusLabel.set_no_show_all(True)
-        table.attach(self.statusLabel, column, column+1, 1, 2, 0, 0, 1)
+        table.attach(self.statusLabel, column, column + 1, 1, 2, 0, 0, 1)
         column += 1
 
         settings = Gio.Settings("org.cinnamon.desktop.keybindings")
@@ -432,7 +449,7 @@ class MelangeApp(dbus.service.Object):
         box.pack_start(keybinding, False, False, 3)
         box.pack_start(actionButton, False, False, 3)
 
-        table.attach(box, column, column+1, 1, 2, 0, 0, 1)
+        table.attach(box, column, column + 1, 1, 2, 0, 0, 1)
 
         self.activatePage("results")
         self.statusLabel.hide()
@@ -470,7 +487,7 @@ class MelangeApp(dbus.service.Object):
             label.connect("close-clicked", self.onCloseTab, content)
             self.customPages[label] = content
             self.notebook.append_page(content, label)
-            self.notebook.set_current_page(self.notebook.get_n_pages()-1)
+            self.notebook.set_current_page(self.notebook.get_n_pages() - 1)
 
         dialog.destroy()
 
@@ -544,10 +561,11 @@ If you defined a hotkey for Melange, pressing it while Melange is visible it wil
         page = self.notebook.page_num(self.pages[moduleName])
         self.notebook.set_current_page(page)
 
+
 if __name__ == "__main__":
     DBusGMainLoop(set_as_default=True)
 
-    sessionBus = dbus.SessionBus ()
+    sessionBus = dbus.SessionBus()
     request = sessionBus.request_name(MELANGE_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
         app = MelangeApp()

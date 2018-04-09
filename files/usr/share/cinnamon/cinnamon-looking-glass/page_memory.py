@@ -3,7 +3,11 @@
 import pageutils
 from gi.repository import Gtk
 
+lookingGlassProxy = None
+
+
 class MemoryView(pageutils.BaseListView):
+
     def __init__(self):
         store = Gtk.ListStore(str, int)
         pageutils.BaseListView.__init__(self, store)
@@ -19,11 +23,11 @@ class MemoryView(pageutils.BaseListView):
     def cellDataFuncSize(self, column, cell, model, iter, data=None):
         value = model.get_value(iter, 1)
         if(value < 1000):
-            cell.set_property("text", "%d B" %  value)
+            cell.set_property("text", "%d B" % value)
         elif(value < 1000000):
-            cell.set_property("text", "%.2f KB" %  (value/1024.0))
+            cell.set_property("text", "%.2f KB" % (value / 1024.0))
         elif(value < 1000000000):
-            cell.set_property("text", "%.2f MB" %  (value/1024.0/1024.0))
+            cell.set_property("text", "%.2f MB" % (value / 1024.0 / 1024.0))
 
     def onStatusChange(self, online):
         if online:
@@ -41,7 +45,9 @@ class MemoryView(pageutils.BaseListView):
         lookingGlassProxy.FullGc()
         self.getUpdates()
 
+
 class ModulePage(pageutils.WindowAndActionBars):
+
     def __init__(self, parent):
         self.view = MemoryView()
         pageutils.WindowAndActionBars.__init__(self, self.view)
@@ -53,7 +59,7 @@ class ModulePage(pageutils.WindowAndActionBars):
         self.addToLeftBar(refresh, 1)
         fullGc = pageutils.ImageButton("user-trash-full")
         fullGc.set_tooltip_text("Full Garbage Collection")
-        fullGc.connect ('clicked', self.view.onFullGc)
+        fullGc.connect('clicked', self.view.onFullGc)
 
         self.addToLeftBar(fullGc, 1)
         self.addToBottomBar(Gtk.Label("Time since last GC:"), 2)

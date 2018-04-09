@@ -3,7 +3,12 @@
 import pageutils
 from gi.repository import Gtk
 
+lookingGlassProxy = None
+melangeApp = None
+
+
 class ModulePage(pageutils.BaseListView):
+
     def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str, str)
         pageutils.BaseListView.__init__(self, store)
@@ -28,13 +33,13 @@ class ModulePage(pageutils.BaseListView):
         self._changed = False
         self.treeView.connect("size-allocate", self.scrollToBottom)
 
-    def scrollToBottom (self, widget, data):
+    def scrollToBottom(self, widget, data):
         if self._changed:
             self.adjust.set_value(self.adjust.get_upper() - self.adjust.get_page_size())
             self._changed = False
 
     def cellDataFuncID(self, column, cell, model, iter, data=None):
-        cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
+        cell.set_property("text", "r(%d)" % model.get_value(iter, 0))
 
     def onRowActivated(self, treeview, path, view_column):
         treeIter = self.store.get_iter(path)

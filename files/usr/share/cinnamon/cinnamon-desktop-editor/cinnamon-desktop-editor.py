@@ -8,14 +8,14 @@ from optparse import OptionParser
 import shutil
 
 import gi
-gi.require_version("Gtk", "3.0")
-gi.require_version("CMenu", "3.0")
+gi.require_version("Gtk", "3.0")  # noqa
+gi.require_version("CMenu", "3.0")  # noqa
 from gi.repository import GLib, Gtk, Gio, CMenu, GdkPixbuf
 
-sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')  # noqa
 from cme import util
 
-sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings/bin')
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings/bin')  # noqa
 import JsonSettingsWidgets
 
 # i18n
@@ -29,6 +29,7 @@ PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
 EXTENSIONS = (".png", ".xpm", ".svg")
 
 DEFAULT_ICON_NAME = "cinnamon-panel-launcher"
+
 
 def escape_space(string):
     return string.replace(" ", "\ ")
@@ -108,6 +109,7 @@ DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 
 
 class IconPicker(object):
+
     def __init__(self, dialog, button, image):
         self.dialog = dialog
         self.button = button
@@ -128,11 +130,11 @@ class IconPicker(object):
             else:
                 theme = Gtk.IconTheme.get_default()
                 icon_info = theme.lookup_icon(fn, 64, 0)
-                icon_info_fn = icon_info.get_filename() if icon_info != None else None
+                icon_info_fn = icon_info.get_filename() if icon_info is not None else None
                 if icon_info_fn:
                     chooser.set_filename(icon_info_fn)
         filter = Gtk.FileFilter()
-        filter.add_pixbuf_formats ()
+        filter.add_pixbuf_formats()
         chooser.set_filter(filter)
 
         preview = Gtk.Image()
@@ -141,7 +143,7 @@ class IconPicker(object):
 
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
-            set_icon_string (self.image, chooser.get_filename())
+            set_icon_string(self.image, chooser.get_filename())
         chooser.destroy()
 
     def update_icon_preview_cb(self, chooser, preview):
@@ -211,7 +213,7 @@ class ItemEditor(object):
             success, parsed = GLib.shell_parse_argv(string)
             if GLib.find_program_in_path(parsed[0]) or ((not os.path.isdir(parsed[0])) and os.access(parsed[0], os.X_OK)):
                 return True
-        except:
+        except Exception:
             pass
         return False
 
@@ -424,6 +426,7 @@ class CinnamonLauncherEditor(ItemEditor):
 
 
 class Main:
+
     def __init__(self):
         parser = OptionParser()
         parser.add_option("-o", "--original", dest="original_desktop_file", help="Path of original .desktop file", metavar="ORIG_FILE")
@@ -530,6 +533,7 @@ class Main:
 
     def end(self):
         Gtk.main_quit()
+
 
 if __name__ == "__main__":
     Gtk.Window.set_default_icon_name(DEFAULT_ICON_NAME)

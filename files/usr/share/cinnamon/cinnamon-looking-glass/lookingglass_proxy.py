@@ -19,13 +19,13 @@ class LookingGlassProxy:
         self._statusChangeCallbacks.append(callback)
 
     def refreshStatus(self):
-        if self._proxy != None:
+        if self._proxy is not None:
             self._setStatus(True)
         else:
             self._setStatus(False)
 
     def getIsReady(self):
-        return self._proxy != None
+        return self._proxy is not None
 
     def connect(self, name, callback):
         self._signals.append((name, callback))
@@ -66,14 +66,14 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 self._proxy.Eval('(s)', code)
-            except:
+            except Exception:
                 pass
 
     def GetResults(self):
         if self._proxy:
             try:
                 return self._proxy.GetResults('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -81,14 +81,14 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 self._proxy.AddResult('(s)', code)
-            except:
+            except Exception:
                 pass
 
     def GetErrorStack(self):
         if self._proxy:
             try:
                 return self._proxy.GetErrorStack('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -96,7 +96,7 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 return self._proxy.GetMemoryInfo('()')
-            except:
+            except Exception:
                 pass
         return (False, 0, {})
 
@@ -104,14 +104,14 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 self._proxy.FullGc('()')
-            except:
+            except Exception:
                 pass
 
     def Inspect(self, code):
         if self._proxy:
             try:
                 return self._proxy.Inspect('(s)', code)
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -119,7 +119,7 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 return self._proxy.GetLatestWindowList('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -127,14 +127,14 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 self._proxy.StartInspector('()')
-            except:
+            except Exception:
                 pass
 
     def GetExtensionList(self):
         if self._proxy:
             try:
                 return self._proxy.GetExtensionList('()')
-            except:
+            except Exception:
                 pass
         return (False, "")
 
@@ -142,6 +142,6 @@ class LookingGlassProxy:
         if self._proxy:
             try:
                 return self._proxy.ReloadExtension('(ss)', uuid, xletType)
-            except:
+            except Exception:
                 pass
         return (False, "")

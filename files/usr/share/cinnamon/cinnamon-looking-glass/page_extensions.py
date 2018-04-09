@@ -4,7 +4,11 @@ import pageutils
 import os
 from gi.repository import Gtk, Gdk
 
+lookingGlassProxy = None
+
+
 class ModulePage(pageutils.BaseListView):
+
     def __init__(self, parent):
         store = Gtk.ListStore(str, str, str, str, str, str, str, bool, str)
         pageutils.BaseListView.__init__(self, store)
@@ -61,7 +65,7 @@ class ModulePage(pageutils.BaseListView):
             path, col, cellx, celly = pthinfo
             self.selectedPath = path
             treeview.grab_focus()
-            treeview.set_cursor( path, col, 0)
+            treeview.set_cursor(path, col, 0)
 
             treeIter = self.store.get_iter(self.selectedPath)
 
@@ -72,7 +76,7 @@ class ModulePage(pageutils.BaseListView):
 
                 self.viewWebPage.set_sensitive(url != "")
                 self.viewSource.set_label(uuid + " (View Source)")
-                self.popup.popup( None, None, None, None, event.button, event.time)
+                self.popup.popup(None, None, None, None, event.button, event.time)
             return True
         elif event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS:
             if pthinfo is not None:

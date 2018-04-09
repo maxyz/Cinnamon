@@ -3,7 +3,12 @@
 import pageutils
 from gi.repository import Gtk
 
+lookingGlassProxy = None
+melangeApp = None
+
+
 class ModulePage(pageutils.BaseListView):
+
     def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str)
         pageutils.BaseListView.__init__(self, store)
@@ -38,7 +43,7 @@ class ModulePage(pageutils.BaseListView):
 
     def cellDataFuncID(self, column, cell, model, treeIter, data=None):
         value = model.get_value(treeIter, 0)
-        cell.set_property("text", "w(%d) / a(%d)" %  (value, value))
+        cell.set_property("text", "w(%d) / a(%d)" % (value, value))
 
     def onRowActivated(self, treeview, path, view_column):
         treeIter = self.store.get_iter(path)
@@ -70,13 +75,13 @@ class ModulePage(pageutils.BaseListView):
                 path, col, cellx, celly = pthinfo
                 self.selectedPath = path
                 treeview.grab_focus()
-                treeview.set_cursor( path, col, 0)
+                treeview.set_cursor(path, col, 0)
 
                 treeIter = self.store.get_iter(self.selectedPath)
                 app = self.store.get_value(treeIter, 3)
 
                 self.inspectApp.set_sensitive(app != "<untracked>")
-                self.popup.popup( None, None, None, None, event.button, event.time)
+                self.popup.popup(None, None, None, None, event.button, event.time)
             return True
 
     def onStatusChange(self, online):

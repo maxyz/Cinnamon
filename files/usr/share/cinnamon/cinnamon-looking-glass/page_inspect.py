@@ -3,7 +3,12 @@
 import pageutils
 from gi.repository import Gtk
 
+lookingGlassProxy = None
+melangeApp = None
+
+
 class InspectView(pageutils.BaseListView):
+
     def __init__(self, parent):
         self.parent = parent
         store = Gtk.ListStore(str, str, str, str, str)
@@ -31,7 +36,7 @@ class InspectView(pageutils.BaseListView):
             self.selectedPath = path
             treeview.grab_focus()
             treeview.set_cursor(path, col, 0)
-            self.popup.popup( None, None, None, None, event.button, event.time)
+            self.popup.popup(None, None, None, None, event.button, event.time)
             return True
 
     def onInsertCommand(self, widget):
@@ -57,7 +62,9 @@ class InspectView(pageutils.BaseListView):
         for item in data:
             self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "['" + item["name"] + "']"])
 
+
 class ModulePage(pageutils.WindowAndActionBars):
+
     def __init__(self, parent):
         self.view = InspectView(self)
         pageutils.WindowAndActionBars.__init__(self, self.view)

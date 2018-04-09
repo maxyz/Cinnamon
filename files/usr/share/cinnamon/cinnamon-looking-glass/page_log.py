@@ -4,7 +4,11 @@ import datetime
 import pageutils
 from gi.repository import Gtk
 
+lookingGlassProxy = None
+
+
 class LogEntry():
+
     def __init__(self, category, time, message):
         self.category = category
         self.time = int(time)
@@ -12,7 +16,9 @@ class LogEntry():
         self.message = message
         self.formattedText = "%s t=%s %s\n" % (category, self.timestr, message)
 
+
 class LogView(Gtk.ScrolledWindow):
+
     def __init__(self):
         Gtk.ScrolledWindow.__init__(self)
 
@@ -25,24 +31,24 @@ class LogView(Gtk.ScrolledWindow):
         self.add(self.textview)
 
         self.textbuffer = self.textview.get_buffer()
-        self.scroll_mark =  self.textbuffer.create_mark(None, self.textbuffer.get_end_iter(), False)
+        self.scroll_mark = self.textbuffer.create_mark(None, self.textbuffer.get_end_iter(), False)
 
         self.log = []
         self.addedMessages = 0
         self.firstMessageTime = None
 
-        self.enabledTypes = {'info': True, 'warning': True, 'error': True, 'trace': False }
+        self.enabledTypes = {'info': True, 'warning': True, 'error': True, 'trace': False}
         self.typeTags = {
-            'info': self.textbuffer.create_tag("info", foreground="#1a6f18", invisible=self.enabledTypes["info"] != True, invisible_set=True),
-            'warning': self.textbuffer.create_tag("warning", foreground="#c8bf33", invisible=self.enabledTypes["warning"] != True, invisible_set=True),
-            'error': self.textbuffer.create_tag("error", foreground="#9f1313", invisible=self.enabledTypes["error"] != True, invisible_set=True),
-            'trace': self.textbuffer.create_tag("trace", foreground="#18186f", invisible=self.enabledTypes["trace"] != True, invisible_set=True)
+            'info': self.textbuffer.create_tag("info", foreground="#1a6f18", invisible=self.enabledTypes["info"] is not True, invisible_set=True),
+            'warning': self.textbuffer.create_tag("warning", foreground="#c8bf33", invisible=self.enabledTypes["warning"] is not True, invisible_set=True),
+            'error': self.textbuffer.create_tag("error", foreground="#9f1313", invisible=self.enabledTypes["error"] is not True, invisible_set=True),
+            'trace': self.textbuffer.create_tag("trace", foreground="#18186f", invisible=self.enabledTypes["trace"] is not True, invisible_set=True)
         }
 
-        #todo: load all enabled types from gsettings
-        #self.enabledTypes = {'info': False, 'warning': False, 'error': False, 'trace': False }
-        #for key in data:
-        #    self.enabledTypes[key] = True
+        # todo: load all enabled types from gsettings
+        # self.enabledTypes = {'info': False, 'warning': False, 'error': False, 'trace': False }
+        # for key in data:
+        #     self.enabledTypes[key] = True
         self.getUpdates()
 
         lookingGlassProxy.connect("LogUpdate", self.getUpdates)
@@ -56,7 +62,7 @@ class LogView(Gtk.ScrolledWindow):
     def onButtonToggled(self, button, data):
         active = button.get_active()
         self.enabledTypes[data] = active
-        self.typeTags[data].props.invisible = active != True
+        self.typeTags[data].props.invisible = active is not True
         self.textbuffer.set_modified(True)
 
     def onStatusChange(self, online):
@@ -68,7 +74,7 @@ class LogView(Gtk.ScrolledWindow):
         self.textbuffer.insert_with_tags(textIter, entry.formattedText, self.typeTags[entry.category])
         self.getUpdates(True)
 
-    def getUpdates(self, reread = False):
+    def getUpdates(self, reread=False):
         success, data = lookingGlassProxy.GetErrorStack()
         if success:
             try:
@@ -86,14 +92,16 @@ class LogView(Gtk.ScrolledWindow):
 
                     textIter = self.textbuffer.get_end_iter()
                     for item in data[self.addedMessages:]:
-                        entry = self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
+                        entry = self.append(item["category"], float(item["timestamp"]) * 0.001, item["message"])
                         self.textbuffer.insert_with_tags(textIter, entry.formattedText, self.typeTags[entry.category])
                         self.addedMessages += 1
                     self.textview.scroll_to_mark(self.scroll_mark, 0, True, 1, 1)
             except Exception as e:
                 print(e)
 
+
 class ModulePage(pageutils.WindowAndActionBars):
+
     def __init__(self, parent):
         self.view = LogView()
         pageutils.WindowAndActionBars.__init__(self, self.view)
